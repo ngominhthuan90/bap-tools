@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gọi số khám bệnh · Bap Tools</title>
+<link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .cs{max-width:1260px;margin:0 auto;padding:22px 24px 40px;display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:22px 26px;align-items:start}
+  .cs-top{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+  .cs-top h1{font-size:24px;line-height:1.2;margin:0;font-weight:700;letter-spacing:-.01em}
+  .cs-top .sp{flex:1}
+  .conn{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink-2);background:var(--paper);
+    border:1px solid var(--rule);border-radius:999px;padding:4px 11px;max-width:100%}
+  .conn i{width:8px;height:8px;border-radius:50%;background:#9AA6B4;flex:none}
+  .conn.online i{background:#22A06B}.conn.local i{background:var(--ink)}.conn.polling i{background:#C98A1B}
+  .conn.offline i,.conn.error i,.conn.noroom i{background:var(--stamp)}
+  .counter{display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .counter label{font-size:14px;font-weight:600;color:var(--ink-2)}
+  .counter select{width:auto;min-width:220px;height:44px;font-size:17px;font-weight:700}
+  /* phiếu số đang mời: hình tấm vé có hai khấc */
+  .ticket{background:var(--paper);box-shadow:var(--paper-shadow);border-radius:6px;padding:18px 28px 20px;position:relative;text-align:center}
+  .ticket::before,.ticket::after{content:"";position:absolute;top:50%;width:24px;height:24px;margin-top:-12px;border-radius:50%;background:var(--desk)}
+  .ticket::before{left:-12px}.ticket::after{right:-12px}
+  .ticket .lab{font-size:14px;color:var(--ink-2);font-weight:600}
+  .ticket .num{font-size:clamp(88px,12vw,150px);font-weight:700;line-height:1;letter-spacing:.02em;font-variant-numeric:tabular-nums;margin:8px 0 10px}
+  .ticket .to{font-size:20px;font-weight:600;padding-top:12px;border-top:1.5px dashed var(--rule)}
+  .ticket.pop .num{animation:pop .45s ease}
+  @keyframes pop{0%{transform:scale(.92);opacity:.3}100%{transform:none;opacity:1}}
+  .next{width:100%;margin-top:18px;min-height:82px;border:0;border-radius:10px;background:var(--stamp);color:#fff;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;font-size:26px;font-weight:700;padding:10px 16px}
+  .next:hover{background:var(--stamp-deep)}
+  .next:disabled{background:#C9A9A6;cursor:not-allowed}
+  .next .no{font-weight:600;opacity:.9;font-size:20px}
+  .next kbd,.k kbd{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.4);color:#fff}
+  .acts3{display:grid;grid-template-columns:1fr 1fr minmax(0,1.4fr);gap:10px;margin-top:10px}
+  .acts3 .btn{height:50px;font-size:15px}
+  .callf{display:flex;gap:6px}
+  .callf input{height:50px;font-size:18px;font-weight:700;text-align:center;min-width:0}
+  .callf .btn{flex:none}
+  .cs .status{font-size:14px;min-height:1.4em;margin-top:12px}
+  .lock{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#FBEDEC;border:1px solid #E7B7B3;color:var(--err);
+    border-radius:8px;padding:10px 12px;margin:0 0 14px;font-size:14px}
+  .lock input{width:130px;height:36px}
+  .panel{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;margin:0 0 16px}
+  .panel h2{font-size:15px;margin:0 0 10px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .panel h2 .sp{flex:1}
+  .lanes{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+  .lane{border:1px solid var(--rule-soft);border-radius:8px;padding:8px 10px;background:var(--tint)}
+  .lane.me{border-color:var(--ink);background:#fff;box-shadow:inset 0 0 0 1px var(--ink)}
+  .lane span{display:block;font-size:12.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lane b{display:block;font-size:26px;font-variant-numeric:tabular-nums;line-height:1.15}
+  .wait{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+  .wait .field{margin:0;flex:1;min-width:120px}
+  .wait .big{font-size:15px;margin:10px 0 0}
+  .tabs{display:inline-flex;gap:4px}
+  .tabs button{border:1px solid var(--rule);background:none;border-radius:6px;padding:2px 9px;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--ink-2)}
+  .tabs button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .hist{list-style:none;margin:0;padding:0;max-height:46vh;overflow:auto}
+  .hist li{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 2px;border-bottom:1px solid var(--rule-soft)}
+  .hist li:last-child{border-bottom:0}
+  .hist b{font-size:20px;font-variant-numeric:tabular-nums}
+  .hist .meta{font-size:12.5px;color:var(--ink-2);line-height:1.3}
+  .hist .meta em{font-style:normal;font-weight:600}
+  .hist .meta em.absent{color:var(--err)}
+  .hist .empty{display:block;color:var(--ink-2);font-size:13.5px;border:0;padding:6px 0}
+  .tools{display:flex;flex-wrap:wrap;gap:8px}
+  /* hộp thiết lập */
+  dialog.dlg{border:0;border-radius:12px;padding:0;width:min(640px,94vw);max-height:92vh;color:var(--ink);box-shadow:0 24px 60px rgba(11,20,34,.35)}
+  dialog.dlg::backdrop{background:rgba(11,20,34,.55)}
+  .dlg form{display:flex;flex-direction:column;max-height:92vh}
+  .dlg .dh{padding:18px 22px 6px}
+  .dlg .dh h2{margin:0;font-size:19px}
+  .dlg .db{padding:6px 22px 8px;overflow:auto}
+  .dlg .df{display:flex;gap:8px;justify-content:flex-end;padding:12px 22px 16px;border-top:1px solid var(--rule-soft)}
+  .dlg h3{font-size:14.5px;margin:18px 0 10px;font-weight:600;border-top:1px solid var(--rule-soft);padding-top:14px}
+  .dlg details{border:1px solid var(--rule);border-radius:8px;padding:0 14px;margin:16px 0 6px}
+  .dlg details[open]{padding-bottom:12px}
+  .dlg summary{cursor:pointer;font-weight:600;padding:12px 0;font-size:14.5px}
+  .dlg textarea{font-size:14px}
+  .dlg .hint{font-size:12.5px;color:var(--ink-2);margin:-6px 0 12px}
+  @media (max-width:980px){.cs{grid-template-columns:1fr}.acts3{grid-template-columns:1fr 1fr}.acts3 .callf{grid-column:1/-1}}
+</style>
+</head>
+<body data-page="goi-so">
+<header class="topbar">
+  <a class="brand" href="./" aria-label="Bap Tools, về trang chủ">
+    <svg width="24" height="24" viewBox="0 0 64 64" aria-hidden="true"><path d="M17 8h22l12 12v36H17z" fill="#fff" stroke="#172A45" stroke-width="4" stroke-linejoin="round"/><path d="M39 8v12h12" fill="none" stroke="#172A45" stroke-width="4" stroke-linejoin="round"/><circle cx="34" cy="38" r="9" fill="none" stroke="#B3261E" stroke-width="4.5"/></svg>
+    <span>Bap Tools</span>
+  </a>
+  <nav class="nav" aria-label="Công cụ">
+    <a href="cccd.html" data-nav="cccd">In CCCD 2 mặt</a>
+    <a href="phieu-stt.html" data-nav="phieu-stt">Phiếu STT – sinh hiệu</a>
+    <a href="nhan-sktd.html" data-nav="nhan-sktd">Nhãn STT khám SKTD</a>
+    <a href="di-buong.html" data-nav="di-buong">Bảng sinh hiệu đi buồng</a>
+    <a href="pdf.html" data-nav="pdf">Công cụ PDF</a>
+    <a href="goi-so.html" data-nav="goi-so">Gọi số</a>
+  </nav>
+</header>
+<main class="cs">
+  <div class="cs-top">
+    <h1 id="roomName">Gọi số khám bệnh</h1>
+    <span class="conn local" id="conn"><i></i><span id="connText">Một máy</span></span>
+    <span class="sp"></span>
+    <button type="button" class="btn" id="openTv">Mở màn hình chờ</button>
+    <button type="button" class="btn" id="copyTv" hidden>Chép link màn hình chờ</button>
+    <button type="button" class="btn btn-ink" id="openSetup">Thiết lập</button>
+  </div>
+
+  <section aria-label="Gọi số">
+    <div class="lock" id="lock" hidden>
+      <span>Máy này chưa nhập đúng PIN nên chỉ xem được.</span>
+      <input type="password" id="pinQuick" inputmode="numeric" placeholder="PIN gọi số" autocomplete="off">
+      <button type="button" class="btn btn-sm" id="pinGo">Mở khoá</button>
+    </div>
+    <div class="counter">
+      <label for="counter">Máy này gọi cho</label>
+      <select id="counter"></select>
+    </div>
+    <div class="ticket" id="ticket" aria-live="polite">
+      <div class="lab">Đang mời</div>
+      <div class="num" id="num">---</div>
+      <div class="to" id="to">Chưa gọi số nào</div>
+    </div>
+    <button type="button" class="next" id="next">Gọi số tiếp theo <span class="no" id="nextNo"></span><span class="k"><kbd>Space</kbd></span></button>
+    <div class="acts3">
+      <button type="button" class="btn" id="recall">Gọi lại <kbd>R</kbd></button>
+      <button type="button" class="btn" id="skip">Vắng mặt <kbd>B</kbd></button>
+      <form class="callf" id="callForm">
+        <input type="number" id="callNo" min="1" max="9999" placeholder="Số" aria-label="Số cần gọi">
+        <button type="submit" class="btn">Gọi số này <kbd>G</kbd></button>
+      </form>
+    </div>
+    <p class="status" id="status" role="status"></p>
+  </section>
+
+  <aside aria-label="Tình hình hôm nay">
+    <div class="panel">
+      <h2>Các quầy</h2>
+      <div class="lanes" id="lanes"></div>
+    </div>
+    <div class="panel">
+      <h2>Số người đang chờ</h2>
+      <form class="wait" id="issuedForm">
+        <label class="field"><span id="issuedLbl">Đã phát phiếu đến số</span><input type="number" id="issued" min="0" max="9999"></label>
+        <button type="submit" class="btn">Lưu</button>
+      </form>
+      <p class="big" id="waitText"></p>
+    </div>
+    <div class="panel">
+      <h2>Hôm nay <span class="sp"></span>
+        <span class="tabs" role="group" aria-label="Lọc lịch sử">
+          <button type="button" data-f="all" aria-pressed="true">Tất cả</button><button type="button" data-f="absent" aria-pressed="false">Vắng mặt <span id="absN">0</span></button>
+        </span>
+      </h2>
+      <ul class="hist" id="hist"></ul>
+    </div>
+    <div class="tools">
+      <button type="button" class="btn btn-sm" id="csv">Tải lịch sử hôm nay (.csv)</button>
+      <button type="button" class="btn btn-sm btn-quiet" id="reset">Đặt lại danh sách hôm nay</button>
+    </div>
+  </aside>
+</main>
+
+<dialog class="dlg" id="dlg" aria-labelledby="dlgTitle">
+  <form id="setupForm" method="dialog">
+    <div class="dh"><h2 id="dlgTitle">Thiết lập gọi số</h2></div>
+    <div class="db">
+      <div class="seg seg-2" id="modeSeg" role="group" aria-label="Cách kết nối" style="margin:10px 0 8px">
+        <button type="button" data-v="local">Một máy<small>Không cần máy chủ</small></button><button type="button" data-v="server">Nhiều máy<small>Qua máy chủ riêng</small></button>
+      </div>
+      <p class="hint" id="modeHint"></p>
+      <div id="srvFields">
+        <label class="field"><span>Địa chỉ máy chủ</span><input type="text" id="fServer" placeholder="https://goi-so.ten-ban.workers.dev" autocomplete="off" spellcheck="false"></label>
+        <div class="row">
+          <label class="field"><span>Mã phòng</span><input type="text" id="fRoom" placeholder="VD: kkb-tang1" autocomplete="off" spellcheck="false"></label>
+          <label class="field"><span>PIN gọi số</span><input type="password" id="fPin" inputmode="numeric" autocomplete="off" placeholder="4–8 chữ số"></label>
+        </div>
+        <p class="hint">Màn hình chờ chỉ cần địa chỉ máy chủ và mã phòng. Máy gọi số cần thêm PIN.</p>
+      </div>
+
+      <h3>Giọng đọc trên máy này</h3>
+      <label class="check"><input type="checkbox" id="fSpeak"> Đọc số ngay trên máy gọi (dùng khi không có màn hình chờ riêng)</label>
+      <div id="voiceBox"></div>
+
+      <details id="roomBox">
+        <summary>Tạo hoặc sửa phòng</summary>
+        <label class="field"><span>Tên hiện trên màn hình chờ</span><input type="text" id="rName" maxlength="60" placeholder="VD: Khoa Khám bệnh tầng 1"></label>
+        <span class="label">Cách đánh số</span>
+        <div class="seg seg-2" id="rModeSeg" role="group" aria-label="Cách đánh số" style="margin:0 0 12px">
+          <button type="button" data-v="shared">Chung một dãy số<small>Lấy số ở quầy tiếp đón</small></button><button type="button" data-v="separate">Mỗi quầy một dãy<small>Mỗi phòng khám số riêng</small></button>
+        </div>
+        <label class="field"><span>Danh sách quầy hoặc phòng, mỗi dòng một tên</span><textarea id="rCounters" rows="5" spellcheck="false"></textarea></label>
+        <p class="hint" id="prefixHint">Mỗi quầy một dãy số thì có thể thêm chữ đứng trước số sau dấu |, VD: Phòng khám 1 | A</p>
+        <div class="row">
+          <label class="field"><span>Số chữ số</span><select id="rDigits"><option value="2">2 (01)</option><option value="3">3 (001)</option><option value="4">4 (0001)</option></select></label>
+          <span class="field"></span>
+        </div>
+        <label class="field"><span>Dòng chữ dưới màn hình chờ (không bắt buộc)</span><input type="text" id="rNotice" maxlength="200" placeholder="VD: Người bệnh vui lòng chuẩn bị sẵn thẻ BHYT"></label>
+        <div id="adminFields">
+          <div class="row">
+            <label class="field"><span>Mã quản trị máy chủ</span><input type="password" id="rAdmin" autocomplete="off"></label>
+            <label class="field"><span>PIN mới</span><input type="password" id="rPin" inputmode="numeric" autocomplete="off" placeholder="Để trống nếu giữ PIN cũ"></label>
+          </div>
+        </div>
+        <div class="row" style="align-items:center">
+          <button type="button" class="btn btn-ink" id="rSave">Lưu phòng</button>
+          <button type="button" class="btn btn-quiet" id="rDelete">Xoá phòng trên máy chủ</button>
+        </div>
+        <p class="status" id="rStatus" role="status"></p>
+      </details>
+    </div>
+    <div class="df">
+      <button type="button" class="btn" id="dlgClose">Đóng</button>
+      <button type="submit" class="btn btn-ink" id="dlgSave">Lưu và kết nối</button>
+    </div>
+  </form>
+</dialog>
+<script src="assets/app.js"></script>
+<script src="assets/goi-so-config.js"></script>
+<script src="assets/goi-so-queue.js"></script>
+<script src="assets/goi-so-net.js"></script>
+<script src="assets/goi-so-voice.js"></script>
+<script src="assets/goi-so-ui.js"></script>
+<script src="assets/goi-so.js"></script>
+</body>
+</html>

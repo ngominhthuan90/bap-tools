@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phiếu STT – sinh hiệu · Bap Tools</title>
+<link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  @page{size:A4 portrait;margin:0}
+  .slips{position:absolute;inset:8mm 10mm 9mm;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);gap:5mm 8mm}
+  .slip{border:.35mm solid #000;padding:2.6mm 4.5mm 3mm;display:flex;flex-direction:column;font-family:var(--form-font);color:#000;min-height:0;overflow:hidden}
+  .slip-head{text-align:center;border-bottom:.3mm solid #000;padding-bottom:1.2mm;margin-bottom:.5mm}
+  .slip-unit{font-size:7.6pt;font-weight:700;line-height:1.18;text-transform:uppercase;margin-bottom:.4mm}
+  .slip-no{font-size:31pt;font-weight:700;line-height:1;letter-spacing:.02em;font-variant-numeric:lining-nums}
+  .slip-body{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;min-height:0}
+  .f-row{display:flex;gap:5mm}
+  .f{flex:1;display:flex;align-items:baseline;gap:2mm;min-width:0;font-size:11.5pt;line-height:1.1}
+  .f b{font-weight:400;white-space:nowrap}
+  .f i{flex:1;min-width:6mm;border-bottom:.3mm dotted #333;transform:translateY(-.6mm)}
+  .f small{font-size:9.5pt;white-space:nowrap}
+</style>
+</head>
+<body data-page="phieu-stt">
+<header class="topbar">
+  <a class="brand" href="./" aria-label="Bap Tools, về trang chủ">
+    <svg width="24" height="24" viewBox="0 0 64 64" aria-hidden="true"><path d="M17 8h22l12 12v36H17z" fill="#fff" stroke="#172A45" stroke-width="4" stroke-linejoin="round"/><path d="M39 8v12h12" fill="none" stroke="#172A45" stroke-width="4" stroke-linejoin="round"/><circle cx="34" cy="38" r="9" fill="none" stroke="#B3261E" stroke-width="4.5"/></svg>
+    <span>Bap Tools</span>
+  </a>
+  <nav class="nav" aria-label="Công cụ">
+    <a href="cccd.html" data-nav="cccd">In CCCD 2 mặt</a>
+    <a href="phieu-stt.html" data-nav="phieu-stt">Phiếu STT – sinh hiệu</a>
+    <a href="nhan-sktd.html" data-nav="nhan-sktd">Nhãn STT khám SKTD</a>
+    <a href="di-buong.html" data-nav="di-buong">Bảng sinh hiệu đi buồng</a>
+    <a href="pdf.html" data-nav="pdf">Công cụ PDF</a>
+    <a href="goi-so.html" data-nav="goi-so">Gọi số</a>
+  </nav>
+</header>
+<main class="bench">
+  <section class="controls" aria-label="Thiết lập phiếu"><div class="controls-in">
+    <h1>Phiếu STT – sinh hiệu</h1>
+    <p class="lede">6 phiếu mỗi tờ A4, mỗi phiếu một số thứ tự. Điền số bắt đầu và số tờ, bản xem trước bên cạnh chính là bản in.</p>
+
+    <label class="field"><span>Tên đơn vị in trên đầu phiếu</span>
+      <input type="text" id="unit" maxlength="80" placeholder="VD: BỆNH VIỆN ĐA KHOA TỈNH ..." autocomplete="off"></label>
+
+    <div class="group">
+      <h2>Số thứ tự</h2>
+      <div class="row">
+        <label class="field"><span>Từ số</span><input type="number" id="from" min="1" max="99999"></label>
+        <label class="field"><span>Số tờ</span><input type="number" id="pages" min="1" max="300"></label>
+        <label class="field"><span>Đến số</span><input type="number" id="to" min="1" max="99999"></label>
+      </div>
+      <div class="seg-wrap" style="margin:0 0 14px">
+        <span class="label" style="margin:0">Chọn nhanh</span>
+        <div class="seg" id="quick" role="group" aria-label="Chọn nhanh số tờ">
+          <button type="button" data-n="1">1 tờ</button><button type="button" data-n="10">10</button><button type="button" data-n="20">20</button><button type="button" data-n="50">50</button><button type="button" data-n="100">100</button>
+        </div>
+      </div>
+      <div class="row">
+        <label class="field"><span>Kiểu số</span>
+          <select id="digits"><option value="1">1, 2, 3</option><option value="2">01, 02</option><option value="3">001, 002</option><option value="4">0001</option></select></label>
+        <label class="field"><span>Chữ đứng trước số</span><input type="text" id="prefix" maxlength="4" placeholder="Không có" autocomplete="off"></label>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Ô trên phiếu</h2>
+      <div class="checks" id="fields">
+        <label class="check"><input type="checkbox" data-f="name"> Họ và tên</label>
+        <label class="check"><input type="checkbox" data-f="year"> Năm sinh</label>
+        <label class="check"><input type="checkbox" data-f="room"> Khám phòng</label>
+        <label class="check"><input type="checkbox" data-f="transfer"> Chuyển phòng</label>
+        <label class="check"><input type="checkbox" data-f="mt"> Mạch, nhiệt độ</label>
+        <label class="check"><input type="checkbox" data-f="hant"> Huyết áp, nhịp thở</label>
+        <label class="check"><input type="checkbox" data-f="spo2"> SpO₂</label>
+        <label class="check"><input type="checkbox" data-f="weight"> Cân nặng</label>
+        <label class="check"><input type="checkbox" data-f="height"> Chiều cao</label>
+      </div>
+    </div>
+
+    <button type="button" class="btn-print" id="print"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7" rx="1"/><path d="M6 18H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/></svg><span id="printLabel">In</span></button>
+    <p class="note" id="summary"></p>
+    <p class="note">Khi in: khổ A4, lề mặc định, tỷ lệ 100%, tắt "Đầu trang và chân trang".</p>
+  </div></section>
+
+  <section class="desk" aria-label="Bản xem trước">
+    <div class="sheets" id="sheets"></div>
+  </section>
+</main>
+<script src="assets/app.js"></script>
+<script src="assets/phieu-stt.js"></script>
+</body>
+</html>

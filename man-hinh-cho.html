@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Màn hình chờ · Gọi số</title>
+<link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  html,body{height:100%}
+  body.tv{margin:0;background:#0E1B2E;color:#F2F5F9;overflow:hidden;--card:rgba(255,255,255,.06);--line:rgba(255,255,255,.13);--mute:#A7B4C6}
+  body.tv.light{background:var(--desk);color:var(--ink);--card:#fff;--line:var(--rule);--mute:var(--ink-2)}
+  .tv-wrap{height:100vh;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:2.4vh;padding:2.6vh 3vw 2.4vh;box-sizing:border-box}
+  .tv-head{display:flex;align-items:center;gap:1.4vw;min-width:0}
+  .tv-head h1{font-size:4.4vh;line-height:1.15;margin:0;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tv-head .dot{width:1.3vh;height:1.3vh;border-radius:50%;background:#22A06B;flex:none}
+  .tv-head .dot.bad{background:var(--stamp)}
+  .tv-head .net{font-size:2.2vh;color:#FF9C92;white-space:nowrap}
+  .tv-head .time{margin-left:auto;text-align:right;line-height:1.05;flex:none}
+  .tv-head .clock{font-size:5.4vh;font-weight:700;font-variant-numeric:tabular-nums}
+  .tv-head .date{font-size:2.2vh;color:var(--mute)}
+  .tv-main{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:2.6vw;min-height:0}
+  /* tấm vé số đang mời */
+  .call{position:relative;background:#fff;color:var(--ink);border-radius:1.6vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:3vh 2vw;min-height:0;box-shadow:0 2vh 5vh rgba(0,0,0,.28)}
+  .call::before,.call::after{content:"";position:absolute;top:50%;width:5vh;height:5vh;margin-top:-2.5vh;border-radius:50%;background:#0E1B2E}
+  body.tv.light .call::before,body.tv.light .call::after{background:var(--desk)}
+  .call::before{left:-2.5vh}.call::after{right:-2.5vh}
+  .call .lead{font-size:4vh;font-weight:600;color:var(--ink-2)}
+  .call .num{font-size:min(27vh,19vw);font-weight:700;line-height:1;letter-spacing:.02em;font-variant-numeric:tabular-nums;margin:1.5vh 0 2vh}
+  .call .to{font-size:5.4vh;font-weight:700;color:var(--stamp);padding-top:2vh;border-top:.35vh dashed #C6CFD9;width:82%;text-align:center;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .call.idle .num{color:#C6CFD9}
+  .call.idle .to{color:#9AA6B4}
+  .call.hot{animation:ring 1.6s ease-out}
+  .call.hot .num{animation:numIn .5s cubic-bezier(.2,.8,.2,1)}
+  @keyframes ring{0%{box-shadow:0 0 0 0 rgba(179,38,30,.85),0 2vh 5vh rgba(0,0,0,.28)}100%{box-shadow:0 0 0 4vh rgba(179,38,30,0),0 2vh 5vh rgba(0,0,0,.28)}}
+  @keyframes numIn{0%{transform:scale(.86);opacity:.2}100%{transform:none;opacity:1}}
+  @media (prefers-reduced-motion:reduce){.call.hot,.call.hot .num{animation:none}}
+  /* các quầy */
+  .board{display:grid;grid-template-rows:repeat(var(--rows,4),minmax(0,1fr));grid-auto-flow:column;gap:1.2vh;min-height:0;font-size:var(--fs,3.4vh)}
+  .board.one{grid-auto-flow:row}
+  .board.two{grid-template-columns:1fr 1fr}
+  .lane{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:1vw;background:var(--card);border:1px solid var(--line);
+    border-radius:1.2vh;padding:0 1.5vw;min-height:0}
+  .lane .nm{font-weight:600;font-size:.8em;line-height:1.15;color:var(--mute);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .lane .n{font-size:1.7em;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1}
+  .board.two .lane{grid-template-columns:1fr;align-content:center;gap:.6vh;padding:0 1.2vw}
+  .board.two .lane .nm{-webkit-line-clamp:1;white-space:nowrap;text-overflow:ellipsis;display:block}
+  .board.two .lane .n{font-size:1.45em}
+  .lane.hot{background:#fff;color:var(--ink);border-color:#fff}
+  .lane.hot .nm{color:var(--ink-2)}
+  .tv-foot{display:flex;align-items:center;gap:2vw;font-size:2.6vh;color:var(--mute);min-width:0}
+  .tv-foot .notice{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:inherit}
+  .recent{display:flex;gap:.8vw;align-items:center;flex:0 1 auto;max-width:58%;overflow:hidden;white-space:nowrap}
+  .recent span{border:1px solid var(--line);border-radius:.8vh;padding:.3vh .7vw;font-variant-numeric:tabular-nums}
+  .recent span b{font-weight:700;color:var(--fg,inherit)}
+  /* màn bắt đầu và nút góc */
+  .start{position:fixed;inset:0;z-index:30;background:rgba(9,17,29,.86);display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .start .box{background:#fff;color:var(--ink);border-radius:14px;padding:30px 34px;max-width:min(620px,92vw);text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.4)}
+  .start h2{font-size:26px;margin:0 0 8px}
+  .start p{margin:6px 0;color:var(--ink-2);font-size:15px}
+  .start .go{display:inline-block;margin-top:16px;background:var(--stamp);color:#fff;border-radius:10px;padding:14px 28px;font-weight:700;font-size:18px}
+  .start .warn{color:var(--err)}
+  .corner{position:fixed;right:1.4vw;bottom:1.6vh;z-index:20;display:flex;gap:6px;opacity:0;transition:opacity .25s}
+  body.mouse .corner{opacity:1}
+  .corner .btn{background:rgba(255,255,255,.95)}
+  .drawer{position:fixed;right:1.4vw;bottom:7vh;z-index:25;width:min(420px,92vw);max-height:80vh;overflow:auto;background:#fff;color:var(--ink);
+    border-radius:12px;padding:16px 18px;box-shadow:0 24px 60px rgba(0,0,0,.4)}
+  .drawer h2{font-size:16px;margin:0 0 12px}
+  body.nocursor{cursor:none}
+</style>
+</head>
+<body class="tv">
+<div class="tv-wrap">
+  <header class="tv-head">
+    <span class="dot" id="dot" title="Kết nối"></span>
+    <h1 id="title">Phòng chờ khám bệnh</h1>
+    <span class="net" id="net" hidden></span>
+    <div class="time"><div class="clock" id="clock">--:--</div><div class="date" id="date"></div></div>
+  </header>
+  <main class="tv-main">
+    <section class="call idle" id="call" aria-live="assertive">
+      <div class="lead" id="lead">Mời bệnh nhân số</div>
+      <div class="num" id="num">---</div>
+      <div class="to" id="to">Chưa gọi số nào</div>
+    </section>
+    <section class="board" id="board" aria-label="Các quầy"></section>
+  </main>
+  <footer class="tv-foot">
+    <span class="notice" id="notice"></span>
+    <span class="recent" id="recent"></span>
+  </footer>
+</div>
+
+<div class="start" id="start" role="button" tabindex="0" aria-label="Bắt đầu màn hình chờ">
+  <div class="box">
+    <h2>Màn hình chờ gọi số</h2>
+    <p id="startRoom"></p>
+    <p id="startVoice"></p>
+    <span class="go">Bấm để bắt đầu và bật âm thanh</span>
+    <p style="margin-top:14px;font-size:13px">Phím tắt: <kbd>F</kbd> toàn màn hình, <kbd>M</kbd> tắt hoặc bật tiếng.</p>
+  </div>
+</div>
+
+<div class="corner" id="corner">
+  <button type="button" class="btn btn-sm" id="bFull">Toàn màn hình</button>
+  <button type="button" class="btn btn-sm" id="bMute">Tắt tiếng</button>
+  <button type="button" class="btn btn-sm" id="bTheme">Nền sáng</button>
+  <button type="button" class="btn btn-sm" id="bSet">Giọng đọc</button>
+</div>
+<div class="drawer" id="drawer" hidden>
+  <h2>Giọng đọc trên màn hình này</h2>
+  <div id="voiceBox"></div>
+  <div class="row" style="justify-content:flex-end;margin-top:6px"><button type="button" class="btn btn-sm btn-ink" id="drawerClose">Xong</button></div>
+</div>
+<script src="assets/app.js"></script>
+<script src="assets/goi-so-config.js"></script>
+<script src="assets/goi-so-queue.js"></script>
+<script src="assets/goi-so-net.js"></script>
+<script src="assets/goi-so-voice.js"></script>
+<script src="assets/goi-so-ui.js"></script>
+<script src="assets/man-hinh-cho.js"></script>
+</body>
+</html>

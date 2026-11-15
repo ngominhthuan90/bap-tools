@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Công cụ PDF · Bap Tools</title>
+<link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .ops{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 6px}
+  .ops button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;border:1px solid var(--rule);border-radius:8px;
+    background:var(--paper);padding:8px 10px;cursor:pointer;font-weight:600;font-size:14px;line-height:1.25;color:var(--ink)}
+  .ops button small{font-weight:400;font-size:12px;color:var(--ink-2)}
+  .ops button:hover{background:var(--tint)}
+  .ops button[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:var(--tint)}
+  .drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:100%;min-height:64px;border:1.5px dashed #A6B2C0;border-radius:8px;
+    background:var(--tint);color:var(--ink);font-weight:600;cursor:pointer;padding:10px;text-align:center}
+  .drop:hover,.drop.over{border-color:var(--ink);background:#E9EEF3}
+  .drop small{display:block;font-weight:400;color:var(--ink-2);font-size:12.5px}
+  .opt{margin:12px 0 0}
+  .radio{display:flex;gap:9px;align-items:flex-start;margin:0 0 8px;cursor:pointer;font-size:14px}
+  .radio input{margin:3px 0 0;accent-color:var(--ink);width:16px;height:16px;flex:none}
+  .radio small{display:block;color:var(--ink-2);font-size:12.5px}
+  .run{width:100%;height:44px;margin-top:14px;font-size:15px}
+  .result{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+  .result a{font-weight:600}
+  .progress{height:6px;background:var(--rule-soft);border-radius:3px;overflow:hidden;margin-top:8px}
+  .progress i{display:block;height:100%;width:0;background:var(--ink);transition:width .2s}
+  /* mặt bàn: các trang/tệp */
+  .board{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px 18px;align-items:start;max-width:1100px;margin:0 auto}
+  .tile{position:relative;user-select:none}
+  .tile .pg{position:relative;background:#fff;box-shadow:var(--paper-shadow);border-radius:2px;aspect-ratio:210/297;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .tile .pg canvas,.tile .pg img{max-width:100%;max-height:100%;display:block;transition:transform .15s}
+  .tile .cap{margin-top:8px;font-size:12.5px;color:var(--ink-2);line-height:1.35;word-break:break-word}
+  .tile .cap b{color:var(--ink);font-weight:600}
+  .tile .acts{position:absolute;top:6px;right:6px;display:flex;gap:4px;opacity:0;transition:opacity .12s}
+  .tile:hover .acts,.tile:focus-within .acts{opacity:1}
+  .tile .acts button{width:28px;height:28px;border-radius:6px;border:1px solid var(--rule);background:rgba(255,255,255,.95);cursor:pointer;font-size:14px;line-height:1;color:var(--ink)}
+  .tile .acts button:hover{background:var(--tint)}
+  .tile.del .pg{opacity:.35}
+  .tile.del .pg::after{content:"Sẽ xoá";position:absolute;inset:auto 8px 8px 8px;background:var(--err);color:#fff;font-size:12px;font-weight:600;border-radius:4px;padding:3px 6px;text-align:center}
+  .tile.sel .pg{outline:3px solid var(--stamp);outline-offset:2px}
+  .tile.dragging{opacity:.35}
+  .tile[draggable="true"] .pg{cursor:grab}
+  .tile .badge{position:absolute;left:6px;top:6px;background:rgba(23,42,69,.82);color:#fff;font-size:11.5px;font-weight:600;border-radius:4px;padding:2px 6px}
+  .ocr-text{width:100%;min-height:260px;font:400 14px/1.55 var(--form-font);white-space:pre-wrap}
+  .ocr-panel{max-width:1100px;margin:28px auto 0;background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:16px}
+  .ocr-panel h2{font-size:16px;margin:0 0 10px}
+  .ocr-panel .row{margin-top:10px}
+</style>
+</head>
+<body data-page="pdf">
+<header class="topbar">
+  <a class="brand" href="./" aria-label="Bap Tools, về trang chủ">
+    <svg width="24" height="24" viewBox="0 0 64 64" aria-hidden="true"><path d="M17 8h22l12 12v36H17z" fill="#fff" stroke="#172A45" stroke-width="4" stroke-linejoin="round"/><path d="M39 8v12h12" fill="none" stroke="#172A45" stroke-width="4" stroke-linejoin="round"/><circle cx="34" cy="38" r="9" fill="none" stroke="#B3261E" stroke-width="4.5"/></svg>
+    <span>Bap Tools</span>
+  </a>
+  <nav class="nav" aria-label="Công cụ">
+    <a href="cccd.html" data-nav="cccd">In CCCD 2 mặt</a>
+    <a href="phieu-stt.html" data-nav="phieu-stt">Phiếu STT – sinh hiệu</a>
+    <a href="nhan-sktd.html" data-nav="nhan-sktd">Nhãn STT khám SKTD</a>
+    <a href="di-buong.html" data-nav="di-buong">Bảng sinh hiệu đi buồng</a>
+    <a href="pdf.html" data-nav="pdf">Công cụ PDF</a>
+    <a href="goi-so.html" data-nav="goi-so">Gọi số</a>
+  </nav>
+</header>
+<main class="bench">
+  <section class="controls" aria-label="Công cụ PDF"><div class="controls-in">
+    <h1>Công cụ PDF</h1>
+    <p class="lede">Mọi thao tác chạy ngay trong trình duyệt. File không rời khỏi máy, không giới hạn số lần dùng.</p>
+
+    <div class="ops" id="ops" role="group" aria-label="Chọn việc cần làm">
+      <button type="button" data-op="merge">Ghép PDF<small>Nhiều file thành một</small></button>
+      <button type="button" data-op="split">Tách PDF<small>Lấy trang, chia nhỏ</small></button>
+      <button type="button" data-op="organize">Sắp xếp trang<small>Xoay, xoá, đổi chỗ</small></button>
+      <button type="button" data-op="images">Ảnh sang PDF<small>JPG, PNG thành PDF</small></button>
+      <button type="button" data-op="compress">Nén dung lượng<small>Giảm MB để gửi</small></button>
+      <button type="button" data-op="ocr">Nhận dạng chữ<small>Bản scan sang chữ</small></button>
+    </div>
+
+    <div class="group" id="panel"></div>
+
+    <p class="local-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Xử lý trên máy này bằng thư viện có sẵn trong trang. Không tải file lên máy chủ nào.</span></p>
+  </div></section>
+
+  <section class="desk" aria-label="Các trang">
+    <div id="board" class="board"></div>
+    <div id="extra"></div>
+  </section>
+</main>
+<script src="assets/app.js"></script>
+<script src="assets/zip.js"></script>
+<script src="assets/pdf-tools.js"></script>
+</body>
+</html>

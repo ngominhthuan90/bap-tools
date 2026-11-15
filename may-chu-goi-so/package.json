@@ -1,0 +1,14 @@
+{
+  "name": "may-chu-goi-so",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Máy chủ đồng bộ Gọi số khám bệnh (Cloudflare Worker + Durable Object)",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "log": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^4.40.0"
+  }
+}

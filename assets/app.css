@@ -1,0 +1,162 @@
+/* =====================================================================
+   Bap Tools — giao diện chung
+   Ý tưởng: "bàn in". Cột trái là phần điền thông tin, bên phải là mặt bàn
+   với tờ giấy A4 đúng kích thước thật. Thứ thấy trên bàn = thứ sẽ in ra.
+   ===================================================================== */
+
+/* ---------- Phông chữ Be Vietnam Pro (tự lưu trong trang, không cần mạng) ---------- */
+@font-face{font-family:"Be Vietnam Pro";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/be-vietnam-pro-vietnamese-400-normal.woff2) format("woff2");unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
+@font-face{font-family:"Be Vietnam Pro";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/be-vietnam-pro-latin-400-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Be Vietnam Pro";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/be-vietnam-pro-vietnamese-500-normal.woff2) format("woff2");unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
+@font-face{font-family:"Be Vietnam Pro";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/be-vietnam-pro-latin-500-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Be Vietnam Pro";font-style:normal;font-weight:600;font-display:swap;src:url(fonts/be-vietnam-pro-vietnamese-600-normal.woff2) format("woff2");unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
+@font-face{font-family:"Be Vietnam Pro";font-style:normal;font-weight:600;font-display:swap;src:url(fonts/be-vietnam-pro-latin-600-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Be Vietnam Pro";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/be-vietnam-pro-vietnamese-700-normal.woff2) format("woff2");unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
+@font-face{font-family:"Be Vietnam Pro";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/be-vietnam-pro-latin-700-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+/* ---------- Bảng màu & kích thước ---------- */
+:root{
+  --desk:#E3E8ED;        /* mặt bàn: xám xanh nhạt, để tờ giấy trắng nổi lên */
+  --desk-deep:#D2D9E0;
+  --paper:#FFFFFF;
+  --ink:#172A45;         /* mực xanh đen */
+  --ink-2:#4F607A;
+  --ink-3:#7B8899;
+  --rule:#C6CFD9;
+  --rule-soft:#E2E7EC;
+  --tint:#F3F6F9;
+  --stamp:#B3261E;       /* đỏ con dấu: chỉ dùng cho nút In và mục đang chọn */
+  --stamp-deep:#8E1D17;
+  --ok:#22644A;
+  --warn:#8A5300;
+  --err:#A4231B;
+  --font:"Be Vietnam Pro","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  --form-font:"Times New Roman",Times,"Liberation Serif",serif;
+  --paper-shadow:0 1px 2px rgba(23,42,69,.10),0 8px 24px rgba(23,42,69,.14);
+  --topbar-h:56px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--desk);color:var(--ink);font:400 15px/1.5 var(--font);}
+img{max-width:100%}
+a{color:var(--ink)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+[hidden]{display:none !important}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Thanh trên cùng ---------- */
+.topbar{position:sticky;top:0;z-index:20;height:var(--topbar-h);display:flex;align-items:center;gap:28px;
+  padding:0 20px;background:var(--paper);border-bottom:1px solid var(--rule)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:700;font-size:16px;white-space:nowrap}
+.brand svg{flex:none}
+.nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin-right:-20px;padding-right:20px;height:100%}
+.nav::-webkit-scrollbar{display:none}
+.nav a{display:flex;align-items:center;padding:0 12px;text-decoration:none;color:var(--ink-2);font-weight:500;font-size:14px;
+  white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px}
+.nav a:hover{color:var(--ink)}
+.nav a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--stamp)}
+
+/* ---------- Bố cục "bàn in": cột điền thông tin + mặt bàn ---------- */
+.bench{display:grid;grid-template-columns:minmax(300px,368px) 1fr;min-height:calc(100vh - var(--topbar-h))}
+.controls{background:var(--paper);border-right:1px solid var(--rule);min-width:0}
+.controls-in{padding:22px 22px 28px;position:sticky;top:var(--topbar-h);max-height:calc(100vh - var(--topbar-h));overflow-y:auto}
+.controls h1{font-size:22px;line-height:1.25;margin:0 0 6px;font-weight:700;letter-spacing:-.01em}
+.lede{margin:0 0 18px;color:var(--ink-2);font-size:14px}
+.group{border-top:1px solid var(--rule-soft);padding:16px 0 4px}
+.group>h2{font-size:14.5px;font-weight:600;margin:0 0 10px}
+.desk{padding:28px 24px 40px;min-width:0;overflow-x:auto}
+
+/* ---------- Ô nhập, nút ---------- */
+.field{display:block;margin:0 0 12px}
+.field>span,.label{display:block;font-size:13px;font-weight:500;color:var(--ink-2);margin:0 0 5px}
+.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.row>.field{flex:1 1 0;min-width:0}
+input[type=text],input[type=number],input[type=date],select,textarea{
+  width:100%;height:40px;padding:0 11px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);
+  transition:border-color .12s,box-shadow .12s}
+textarea{height:auto;padding:10px 11px;resize:vertical;line-height:1.45}
+select{cursor:pointer;padding-right:28px;appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%234F607A' stroke-width='1.6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px rgba(23,42,69,.13)}
+input[type=number]{font-variant-numeric:tabular-nums}
+input::placeholder,textarea::placeholder{color:#9AA6B4}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:38px;padding:0 14px;border:1px solid var(--rule);
+  border-radius:8px;background:var(--paper);color:var(--ink);font-weight:600;font-size:14px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{background:var(--tint);border-color:#AEB9C6}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-sm{height:30px;padding:0 10px;font-size:13px;border-radius:6px}
+.btn-quiet{border-color:transparent;background:none;color:var(--ink-2)}
+.btn-quiet:hover{background:var(--tint);color:var(--ink);border-color:transparent}
+.btn-ink{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn-ink:hover{background:#0F1E33;border-color:#0F1E33}
+.btn-print{width:100%;height:48px;margin-top:18px;border:0;border-radius:8px;background:var(--stamp);color:#fff;
+  font-weight:700;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn-print:hover{background:var(--stamp-deep)}
+.btn-print:disabled{background:#C9A9A6;cursor:not-allowed}
+.btn-print svg{flex:none}
+
+/* Nhóm lựa chọn nhanh (dạng phím bấm liền nhau) */
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--paper)}
+.seg button{border:0;background:none;padding:0 12px;height:34px;font-size:13.5px;font-weight:600;color:var(--ink-2);cursor:pointer;
+  border-left:1px solid var(--rule)}
+.seg button:first-child{border-left:0}
+.seg button:hover{background:var(--tint);color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg-wrap{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.seg-2{display:grid;grid-template-columns:1fr 1fr;width:100%}
+.seg-2 button{height:auto;padding:8px 10px;line-height:1.25;text-align:left}
+.seg-2 button small{display:block;font-weight:500;font-size:12px;opacity:.8;margin-top:1px}
+
+.check{display:flex;align-items:center;gap:9px;margin:0 0 9px;font-size:14px;cursor:pointer}
+.check input{width:17px;height:17px;margin:0;accent-color:var(--ink);flex:none}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+
+.note{font-size:13px;color:var(--ink-2);margin:12px 0 0}
+.local-note{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--ink-2);margin:14px 0 0;line-height:1.45}
+.local-note svg{flex:none;margin-top:2px}
+.status{font-size:13.5px;margin:10px 0 0;min-height:1.2em}
+.status.ok{color:var(--ok)}
+.status.err{color:var(--err)}
+.status.busy{color:var(--ink-2)}
+kbd{font:600 12px/1 var(--font);border:1px solid var(--rule);border-bottom-width:2px;border-radius:4px;padding:2px 5px;background:var(--tint)}
+
+/* ---------- Mặt bàn & tờ giấy ---------- */
+.sheets{width:210mm;margin:0 auto;display:flex;flex-direction:column;gap:14mm}
+.sheet-wrap{position:relative}
+.sheet-label{position:absolute;left:0;top:-6.5mm;font-size:3.6mm;color:var(--ink-3);font-weight:500}
+.sheet{width:210mm;height:296mm;background:var(--paper);box-shadow:var(--paper-shadow);position:relative;overflow:hidden;color:#000}
+.desk-empty{max-width:420px;margin:12vh auto;text-align:center;color:var(--ink-2)}
+.desk-empty b{display:block;color:var(--ink);font-size:17px;margin-bottom:6px}
+
+/* ---------- Chân trang ---------- */
+.foot{padding:28px 24px 36px;color:var(--ink-2);font-size:13px;max-width:1180px;margin:0 auto}
+.foot a{color:var(--ink-2)}
+
+/* ---------- Điện thoại / màn hình hẹp ---------- */
+@media (max-width:900px){
+  .bench{grid-template-columns:1fr}
+  .controls{border-right:0;border-bottom:1px solid var(--rule)}
+  .controls-in{position:static;max-height:none}
+  .desk{padding:24px 12px 32px}
+  .topbar{gap:14px;padding:0 14px}
+  .nav{margin-right:-14px;padding-right:14px}
+  .brand span{display:none}
+  .foot{padding:24px 16px 32px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+
+/* ---------- In: chỉ in tờ giấy ---------- */
+@media print{
+  html,body{background:#fff !important;margin:0 !important;padding:0 !important}
+  .no-print,.topbar,.controls,.foot,.sheet-label{display:none !important}
+  .bench{display:block;min-height:0}
+  .desk{padding:0 !important;overflow:visible !important;background:none !important}
+  .sheets{zoom:1 !important;gap:0 !important;width:auto;margin:0}
+  .sheet{box-shadow:none !important;break-after:page;page-break-after:always}
+  .sheet-wrap:last-child .sheet{break-after:auto;page-break-after:auto}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}

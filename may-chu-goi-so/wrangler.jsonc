@@ -1,0 +1,18 @@
+{
+  // Cấu hình máy chủ Gọi số. Thường chỉ cần sửa "name" nếu muốn đổi địa chỉ.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "goi-so",
+  "main": "src/index.js",
+  "compatibility_date": "2025-10-01",
+  "durable_objects": {
+    "bindings": [{ "name": "QUEUE", "class_name": "QueueRoom" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["QueueRoom"] }],
+  "vars": {
+    // Trang nào được dùng máy chủ này. "*" = mọi trang.
+    // Nên đổi thành địa chỉ GitHub Pages của bạn, VD: "https://ten-tai-khoan.github.io"
+    // (nhiều địa chỉ thì cách nhau bằng dấu phẩy).
+    "ALLOWED_ORIGINS": "*"
+  },
+  "observability": { "enabled": true }
+}
